@@ -1,0 +1,32 @@
+---
+  - name: Capture of Spine or Leaf
+    set_fact:
+      type: "{{ inventory_hostname | regex_replace('-(.*)$') | string }}"
+
+  - name: See
+    debug:
+      var: type
+
+  - name: Configure the Leafs interfaces and Loopbacks
+    nclu:
+      atomic: true
+      template: |
+
+
+          {% if type == "le" %}
+          {% for iface in range(4,6) %}
+           add int swp{{iface}}
+           add interface swp{{iface}} ipv6 nd ra-interval 5
+           del interface swp{{iface}} ipv6 nd suppress-ra
+          {% endfor %}
+          {% endif %}
+
+          {% if type == "sp" %}
+          {% for iface in range(1,7) %}
+           add int swp{{iface}}
+           add interface swp{{iface}} ipv6 nd ra-interval 5
+           del interface swp{{iface}} ipv6 nd suppress-ra
+          {% endfor %}
+          {% endif %}
+
+           add loopback lo ip address {{asnos[inventory_hostname].loopback}}/32

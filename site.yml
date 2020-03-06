@@ -1,0 +1,15 @@
+---
+
+  - hosts: leaf-vxlan
+    roles:
+       - hostnames
+       - bridges
+       - interfaces
+       - bgp
+       - vxlan
+
+  - hosts: spines
+    roles:
+       - hostnames
+       - interfaces
+       - bgp

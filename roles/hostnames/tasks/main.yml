@@ -1,0 +1,6 @@
+---
+   - name: set hostname
+     nclu:
+       atomic: true
+       commands:
+           - add hostname {{ inventory_hostname }}

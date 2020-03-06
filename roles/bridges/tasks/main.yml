@@ -1,0 +1,36 @@
+---
+
+   - name: set general bridge settings
+     nclu:
+       atomic: true
+       commands:
+          - add bridge stp treeprio 28672
+          - add bond peerlink bond slaves swp6
+
+   - name: Register peerlink Member
+     set_fact:
+       peer_id: "{{ inventory_hostname | regex_replace('(.)(?!$)') | int }}"
+
+   - name: Set PeerLink Address and PeerLink Address
+     nclu:
+       atomic: true
+       template: |
+           {% for peer in peer_id %}
+           {% if peer == "1" %}
+            add interface peerlink.4094 ip address 169.254.255.1/30
+            add interface peerlink.4094 clag peer-ip 169.254.255.2
+           {% endif %}
+           {% if peer == "2" %}
+            add interface peerlink.4094 ip address 169.254.255.2/30
+            add interface peerlink.4094 clag peer-ip 169.254.255.1
+           {% endif %}
+           {% endfor %}
+
+            add interface peerlink.4094 clag enable yes
+            add interface peerlink.4094 clag sys-mac {{ asnos[inventory_hostname].clag_sys_mac }}
+
+   - name: Add PeerLink to Bridge
+     nclu:
+       atomic: true
+       commands:
+          - add bridge bridge ports peerlink

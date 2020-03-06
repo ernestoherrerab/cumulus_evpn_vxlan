@@ -1,0 +1,23 @@
+---
+
+   - name: set clag VxLAN IP
+     nclu:
+       atomic: true
+       commands:
+           - add loopback lo clag vxlan-anycast-ip {{ asnos[inventory_hostname].clag_anycast_ip }}
+
+   - name: Add VNIs
+     nclu:
+       atomic: true
+       commands:
+           - add vxlan vni-{{item}} vxlan id {{item}}
+           - add vxlan vni-{{item}} vxlan local-tunnelip {{ asnos[inventory_hostname].loopback }}
+           - add vxlan vni-{{item}} stp bpduguard
+           - add vxlan vni-{{item}} stp portbpdufilter
+           - add vxlan vni-{{item}} bridge learning off
+           - add vxlan vni-{{item}} bridge arp-nd-suppress on
+           - add vxlan vni-{{item}} bridge access {{item}}
+           - add vlan {{item}} ip forward off
+           - add vlan {{item}} ipv6 forward off
+
+     loop: "{{vxlan.vni}}"

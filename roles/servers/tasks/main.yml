@@ -1,0 +1,12 @@
+---
+
+   - name: set server MLAG
+     nclu:
+       atomic: true
+       commands:
+           - add clag port bond server{{ asnos[inventory_hostname].server_id }} interface swp3 clag-id {{ asnos[inventory_hostname].server_id }}
+           - add bond server{{ asnos[inventory_hostname].server_id }} bridge trunk
+           - add bond server{{ asnos[inventory_hostname].server_id }} bond mode balance-xor
+#           - add bond server{{ asnos[inventory_hostname].server_id }} bridge access {{ asnos[inventory_hostname].server_vlan }}
+#           - add bond server{{ asnos[inventory_hostname].server_id }} stp portadminedge
+#           - add bond server{{ asnos[inventory_hostname].server_id }} stp bpduguard
