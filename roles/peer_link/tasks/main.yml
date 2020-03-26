@@ -31,13 +31,13 @@
             add interface peerlink.4094 ip address 169.254.255.1/30
             add interface peerlink.4094 clag peer-ip 169.254.255.2
             add interface peerlink.4094 clag priority 100
-            add interface peerlink.4094 clag backup-ip {{ lo_3_fact }}{{ lo_last_oct | int - 1 }}
+            add interface peerlink.4094 clag backup-ip {{ lo_3_oct }}{{ lo_last_oct | int - 1 }}
           
           {% elif (peer_id | int % 2 == 1) %}
             add interface peerlink.4094 ip address 169.254.255.2/30
             add interface peerlink.4094 clag peer-ip 169.254.255.1
             add interface peerlink.4094 clag priority 200
-            add interface peerlink.4094 clag backup-ip {{ lo_3_fact }}{{ lo_last_oct | int + 1 }}
+            add interface peerlink.4094 clag backup-ip {{ lo_3_oct }}{{ lo_last_oct | int + 1 }}
           {% endif %}
 
           add interface peerlink.4094 clag enable yes
