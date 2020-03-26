@@ -1,0 +1,47 @@
+---
+
+  - hosts: leaf
+    roles:
+       - general
+       - interfaces
+       - peer_link
+       - bridges
+       - bgp
+       - vxlan
+
+  - hosts: exit
+    roles:
+      - general
+      - interfaces
+      - bridges
+      - peer_link
+      - bgp 
+      - vxlan
+
+  - hosts: spine
+    roles:
+       - general
+       - interfaces
+       - bgp
+
+  - hosts: internet_rtr
+    roles:
+      - general
+      - interfaces
+      - bgp
+
+  - hosts: firewalls
+    user: cumulus
+    become: yes
+    become_method: sudo
+    roles:
+      - firewall_config 
+  
+  - hosts: servers
+    user: cumulus
+    become: yes
+    become_method: sudo
+    roles:
+      - server_config
+
+  

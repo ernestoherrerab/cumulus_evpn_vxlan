@@ -1,0 +1,13 @@
+--- 
+
+  - name: Reset Topology
+    hosts: network
+    gather_facts: false
+    tasks:
+
+      - name: Resetting Topology...
+        nclu:
+          atomic: true
+          commands:
+            - del all
+

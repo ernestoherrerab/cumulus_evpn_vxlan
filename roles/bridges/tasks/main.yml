@@ -1,0 +1,24 @@
+--- 
+
+  - name: Add Exit Bridged Edge Port
+    nclu:
+      atomic: true
+      commands: 
+          - add bridge bridge ports swp{{ item }}
+    with_items: "{{ devices[inventory_hostname].bridge_ports }}"
+    when: dev_type == "exit"
+
+  - name: Add Leaves Access Ports - MLAG
+    nclu:
+      atomic: true
+      commands:
+          - add interface swp{{ item.access_if }}
+          - add interface swp{{ item.access_if }} alias Link to {{ item.bond_name }}
+          - add interface swp{{ item.access_if }} post-up 'ip link set swp{{ item.access_if }} promisc on'
+          - add bond bond{{ item.clag_id }} bond slaves swp{{ item.access_if }}
+          - add bond bond{{ item.clag_id }} bridge access {{ item.vlan }}
+          - add bond bond{{ item.clag_id }} mtu 9000
+          - add bridge bridge ports bond{{ item.clag_id }}
+          - add bond bond{{ item.clag_id }} clag id {{ item.clag_id }}
+    with_items: "{{ devices[inventory_hostname].access_ports}}"
+    when: dev_type == "leaf"

@@ -1,0 +1,19 @@
+---
+
+  - name: FW Copy FRR Daemons
+    copy: src=fw_config/{{ansible_hostname}}/frr/daemons dest=/etc/frr/
+
+  - name: FW Copy frr.conf File
+    copy: src=fw_config/{{ansible_hostname}}/frr/frr.conf dest=/etc/frr/
+  
+  - name: FW Copy vtysh.conf File
+    copy: src=fw_config/{{ansible_hostname}}/frr/vtysh.conf dest=/etc/frr/
+
+  - name: FW Copy Interfaces File
+    copy: src=fw_config/{{ansible_hostname}}/interfaces/interfaces dest=/etc/network/
+
+  - name: Restart FWs
+    shell: sleep 1 && shutdown -r 0
+    async: 1
+    poll: 0
+    ignore_errors: true

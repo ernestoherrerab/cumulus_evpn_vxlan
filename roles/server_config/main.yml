@@ -1,0 +1,10 @@
+---
+
+  - name: Copy Interfaces File
+    copy: src=srv_config/{{ansible_hostname}}/interfaces dest=/etc/network/
+
+  - name: Restart Servers
+    shell: sleep 1 && shutdown -r 0
+    async: 1
+    poll: 0
+    ignore_errors: true

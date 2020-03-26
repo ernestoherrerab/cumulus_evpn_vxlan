@@ -1,0 +1,45 @@
+---
+
+  - name: Register Peer ID 
+    set_fact:
+      peer_id: "{{ inventory_hostname | regex_replace('[a-z]+\\d') }}"
+
+  - name: Set General Bridge Settings
+    nclu:
+      atomic: true
+      commands:
+        - add interface swp{{ item }}
+        - add interface swp{{ item }} post-up 'ip link set swp{{ item }} promisc on'
+        - add interface swp{{ item }} alias to leaf peer
+        - add bridge stp treeprio 28672
+        - add bond peerlink bond slaves swp{{ item }}
+    with_items: "{{ devices[inventory_hostname].peerlink_ports }}"
+
+  - name: Set PeerLink Address and PeerLink Address
+    nclu:
+      atomic: true
+      template: |
+          {% if (peer_id | int % 2 == 0) %}
+            add interface peerlink.4094 ip address 169.254.255.1/30
+            add interface peerlink.4094 clag peer-ip 169.254.255.2
+            add interface peerlink.4094 clag priority 100
+            #add interface peerlink.4094 clag backup-ip 10.0.0.
+          
+          {% elif (peer_id | int % 2 == 1) %}
+            add interface peerlink.4094 ip address 169.254.255.2/30
+            add interface peerlink.4094 clag peer-ip 169.254.255.1
+            add interface peerlink.4094 clag priority 200
+            #add interface peerlink.4094 clag backup-ip 10.0.0.    
+          {% endif %}
+
+          add interface peerlink.4094 clag enable yes
+          add interface peerlink.4094 clag sys-mac {{ devices[inventory_hostname].clag_sys_mac }}
+
+  - name: Add PeerLink to Bridge
+    nclu:
+      atomic: true
+      commands:
+        - add bridge bridge pvid 1
+        - add bridge bridge vlan-aware
+        - add bridge bridge ports peerlink
+        - add bond peerlink mtu 9000

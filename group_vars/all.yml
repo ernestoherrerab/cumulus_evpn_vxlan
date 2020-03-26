@@ -1,0 +1,150 @@
+---
+
+devices:
+
+   spine01:
+      loopback: 10.0.0.21
+      asn: 65020
+      leaf_links:
+         - 1
+         - 2
+         - 3
+         - 4
+         - 29
+         - 30
+
+   spine02:
+      loopback: 10.0.0.22
+      asn: 65020
+      leaf_links:
+         - 1
+         - 2
+         - 3
+         - 4
+         - 29
+         - 30
+
+   leaf01:
+      asn: 65011
+      loopback: 10.0.0.11
+      clag_sys_mac: 44:39:39:FF:00:D3
+      clag_anycast_ip: 10.0.0.112
+      transit_vxlan_hw_add: 44:39:39:FF:40:93
+      uplink_ports:
+         - 51
+         - 52
+      peerlink_ports:
+         - 49
+         - 50
+      access_ports: 
+         - {bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
+         - {bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
+
+   leaf02:
+      asn: 65012
+      loopback: 10.0.0.12
+      clag_sys_mac: 44:39:39:FF:00:D3
+      clag_anycast_ip: 10.0.0.112
+      transit_vxlan_hw_add: 44:39:39:FF:40:93
+      uplink_ports:
+         - 51
+         - 52
+      peerlink_ports:
+         - 49
+         - 50
+      access_ports: 
+         - {bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
+         - {bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
+
+   leaf03:
+      asn: 65013
+      loopback: 10.0.0.13
+      clag_sys_mac: 44:39:39:FF:00:D4
+      clag_anycast_ip: 10.0.0.134
+      transit_vxlan_hw_add: 44:39:39:FF:40:94
+      uplink_ports:
+         - 51
+         - 52
+      peerlink_ports:
+         - 49
+         - 50
+      access_ports: 
+         - {bond_name: server3 , access_if: 1 , clag_id: 3 , vlan: 13 }
+         - {bond_name: server4 , access_if: 2 , clag_id: 4 , vlan: 24 }
+
+   leaf04:
+      asn: 65014
+      loopback: 10.0.0.14
+      clag_sys_mac: 44:39:39:FF:00:D4
+      clag_anycast_ip: 10.0.0.134
+      transit_vxlan_hw_add: 44:39:39:FF:40:94
+      uplink_ports:
+         - 51
+         - 52
+      peerlink_ports:
+         - 49
+         - 50
+      server_id: 2 
+
+   exit01:
+      asn: 65041
+      loopback: 10.0.0.41
+      clag_sys_mac: 44:39:39:FF:00:D5
+      clag_anycast_ip: 10.0.0.212
+      transit_vxlan_hw_add: 44:39:39:FF:40:95
+      uplink_ports:
+         - 1.2
+         - 51
+         - 52   
+      peerlink_ports:
+         - 49
+         - 50
+      edge_ports:
+         - { sub_if: 1.2 , sub_ip: 169.254.254.1/30 , sub_vrf: '' }
+         - { sub_if: 1.3 , sub_ip: 169.254.254.5/30 , sub_vrf: vrf evpn-vrf }
+         - { sub_if: 1.4 , sub_ip: 169.254.254.9/30 , sub_vrf: vrf internet-vrf }
+      bridge_ports:
+         - 1
+      internet_ports:
+         - { int_if: 44 , int_vrf: internet-vrf }
+
+   exit02:
+      asn: 65042
+      loopback: 10.0.0.42
+      clag_sys_mac: 44:39:39:FF:00:D5
+      clag_anycast_ip: 10.0.0.212
+      transit_vxlan_hw_add: 44:39:39:FF:40:95
+      uplink_ports:
+         - 1.2
+         - 51
+         - 52
+      peerlink_ports:
+         - 49
+         - 50
+      edge_ports:
+         - { sub_if: 1.2 , sub_ip: 169.254.253.1/30 , sub_vrf: '' }
+         - { sub_if: 1.3 , sub_ip: 169.254.253.5/30 , sub_vrf: vrf evpn-vrf }
+         - { sub_if: 1.4 , sub_ip: 169.254.253.9/30 , sub_vrf: vrf internet-vrf }
+      bridge_ports:
+         - 1
+      internet_ports:
+         - { int_if: 44 , int_vrf: internet-vrf }
+         
+   internet:
+      asn: 25253
+      loopback: 10.0.0.253
+      sec_loopback: 172.16.1.1
+      uplink_ports: 
+         - 1
+         - 2
+
+vxlan:
+   vni:
+      - { vlan_id: 13 , vlan_ip: 10.1.3. , vlan_vty_mac: '44:39:39:ff:00:13' , vlan_vty_ip: 10.1.3.1/24 }
+      - { vlan_id: 24 , vlan_ip: 10.2.4. , vlan_vty_mac: '44:39:39:ff:00:24' , vlan_vty_ip: 10.2.4.1/24 }
+      
+transit_vxlan: { tx_vxlan: 4001 , tx_vrf: evpn-vrf }
+
+ntp: 192.168.0.254
+
+dns: 192.168.0.254

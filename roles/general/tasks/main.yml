@@ -1,0 +1,21 @@
+---
+
+  - name: Capture if device is a Spine or Leaf
+    set_fact:
+      dev_type: "{{ inventory_hostname | regex_search('([a-z]+)') | string }}"
+
+  - name: set general settings
+    nclu:
+     atomic: true
+     commands:
+        - add vrf mgmt ip address 127.0.0.1/8
+        - add interface eth0 alias management interface 
+        - add interface eth0 vrf mgmt
+        - add dns nameserver ipv4 {{ dns }} vrf mgmt 
+        - add time ntp server {{ ntp }} iburst 
+        - add time ntp source eth0
+        - add routing defaults datacenter 
+        - add routing service integrated-vtysh-config
+        - add routing log syslog informational
+        - add time zone Europe/Stockholm
+

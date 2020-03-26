@@ -1,0 +1,94 @@
+---
+
+  - name: Configure VRFs
+    nclu:
+      atomic: true
+      commands: 
+          - add vrf evpn-vrf vrf-table auto
+          - add routing route-map LOOPBACKS permit 10 match interface lo
+    when: dev_type != "internet"
+
+  - name: Configure BGP Unnumbered For All Leaves 
+    nclu:
+      atomic: true
+      commands: 
+          - add bgp autonomous-system {{ devices[inventory_hostname].asn }}
+          - add bgp router-id {{ devices[inventory_hostname].loopback }}
+          - add bgp bestpath as-path multipath-relax
+          - add bgp neighbor fabric peer-group
+          - add bgp neighbor swp{{ item }} peer-group fabric
+          - add bgp neighbor fabric remote-as external
+          - add bgp neighbor fabric description Internal_Fabric_Network
+          - add bgp neighbor fabric capability extended-nexthop
+          - add bgp l2vpn evpn advertise-all-vni
+          - add bgp l2vpn evpn neighbor fabric activate
+          - add bgp ipv4 unicast redistribute connected route-map LOOPBACKS
+          - add bgp ipv4 unicast maximum-paths 64
+          - add bgp ipv6 unicast neighbor fabric activate
+    with_items: "{{ devices[inventory_hostname].uplink_ports }}"
+    when: dev_type == "leaf" or dev_type == "exit"
+
+
+  - name: Configure BGP Unnumbered For Spines
+    nclu:
+      atomic: true
+      commands: 
+          - add bgp autonomous-system {{ devices[inventory_hostname].asn }}
+          - add bgp router-id {{ devices[inventory_hostname].loopback }}
+          - add bgp bestpath as-path multipath-relax
+          - add bgp neighbor fabric peer-group
+          - add bgp neighbor swp{{ item }} peer-group fabric
+          - add bgp neighbor fabric remote-as external
+          - add bgp neighbor fabric description Internal_Fabric_Network
+          - add bgp neighbor fabric capability extended-nexthop
+          - add bgp ipv4 unicast redistribute connected route-map LOOPBACKS
+          - add bgp ipv4 unicast maximum-paths 64
+          - add bgp ipv6 unicast neighbor fabric activate
+          - add bgp l2vpn evpn neighbor fabric activate
+    with_items: "{{ devices[inventory_hostname].leaf_ports }}"
+    when: dev_type == "spine"  
+
+  - name: Configure Route Maps and Internet VRF - Specific For Exit Leaves    
+    nclu:
+      atomic: true
+      commands:
+          - add routing route-map INTERNET permit 10 match interface internet-vrf
+          - add routing route-map SETSRC permit 10 match source-protocol bgp
+          - add routing route-map SETSRC permit 10 set src {{ devices[inventory_hostname].loopback}}
+          - add routing protocol bgp route-map SETSRC  
+          - add vrf internet-vrf vrf-table auto      
+          - add vrf evpn-vrf,internet-vrf ip address {{ devices[inventory_hostname].loopback}}/32
+    when: dev_type == "exit"
+
+  - name: Configure BGP - Specific for Exit Leaves
+    nclu:
+      atomic: true
+      template: |
+          {% for sub_int in devices[inventory_hostname].edge_ports %}
+            add bgp {{ sub_int.sub_vrf }} autonomous-system {{ devices[inventory_hostname].asn }}
+            add bgp {{ sub_int.sub_vrf }} neighbor swp{{ sub_int.sub_if }} interface remote-as external
+            add bgp {{ sub_int.sub_vrf }} ipv4 unicast neighbor swp{{ sub_int.sub_if }} allowas-in 1
+            add bgp {{ sub_int.sub_vrf }} router-id {{ devices[inventory_hostname].loopback }} 
+          {% endfor %}
+          {% for vlan_ip_add in vxlan.vni %}
+            add bgp vrf evpn-vrf ipv4 unicast network {{ vlan_ip_add.vlan_ip }}0/24
+          {% endfor %} 
+          add bgp vrf evpn-vrf l2vpn evpn advertise ipv4 unicast
+          {% for internet_int in devices[inventory_hostname].internet_ports %}
+            add bgp vrf internet-vrf neighbor swp{{ internet_int.int_if }} interface remote-as external
+          {% endfor %}
+          add bgp vrf internet-vrf ipv4 unicast redistribute connected route-map INTERNET
+    when: dev_type == "exit"
+      
+  - name: Configure BGP - Specific for Internet Router
+    nclu:
+      atomic: true
+      commands:
+          - add bgp autonomous-system {{ devices[inventory_hostname].asn }}
+          - add bgp router-id {{ devices[inventory_hostname].loopback }}
+          - add bgp bestpath as-path multipath-relax
+          - add bgp neighbor swp{{ item }} interface remote-as external
+          - add bgp ipv4 unicast network {{ devices[inventory_hostname].loopback }}/32
+          - add bgp ipv4 unicast neighbor swp{{ item }} default-originate
+    with_items: "{{ devices[inventory_hostname].uplink_ports }}"
+    when: dev_type == "internet"

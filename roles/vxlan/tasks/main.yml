@@ -1,0 +1,59 @@
+---
+
+   - name: Register Leaf ID 
+     set_fact:
+        leaf_id: "{{ inventory_hostname | regex_replace('[a-z]+') | int + 10 }}"
+    
+   - name: Set Clag VxLAN IP
+     nclu:
+       atomic: true
+       commands:
+           - add loopback lo clag vxlan-anycast-ip {{ devices[inventory_hostname].clag_anycast_ip }}
+   
+   - name: Add VLANs Configuration
+     nclu:
+       atomic: true
+       commands:
+           - add vlan {{ item.vlan_id }} vlan-id {{ item.vlan_id }} 
+           - add vlan {{ item.vlan_id }} vlan-raw-device bridge
+           - add vlan {{ item.vlan_id }} mtu 9000
+           - add vlan {{ item.vlan_id }} vrf evpn-vrf
+           - add vlan {{item.vlan_id }} ip address {{ item.vlan_ip }}{{ leaf_id }}/24
+           - add vlan {{ item.vlan_id }} ip address-virtual {{ item.vlan_vty_mac }} {{ item.vlan_vty_ip }}
+     with_items: "{{ vxlan.vni }}"
+
+   - name: Add Transit VLAN Configuration
+     nclu:
+       atomic: true
+       commands:
+          - add vlan {{ transit_vxlan.tx_vxlan }} hwaddress {{ devices[inventory_hostname].transit_vxlan_hw_add }}
+          - add vlan {{ transit_vxlan.tx_vxlan }} vlan-id {{ transit_vxlan.tx_vxlan }}
+          - add vlan {{ transit_vxlan.tx_vxlan }} vlan-raw-device bridge
+          - add vlan {{ transit_vxlan.tx_vxlan }} vrf {{ transit_vxlan.tx_vrf }}
+
+   - name: Add Transit VNI-VXLAN Configuration
+     nclu:
+       atomic: true
+       commands:
+           - add vxlan vxlan{{ transit_vxlan.tx_vxlan }} vxlan id {{ transit_vxlan.tx_vxlan }}
+           - add vrf {{ transit_vxlan.tx_vrf }} vni {{ transit_vxlan.tx_vxlan }}
+           - add bridge bridge ports vxlan{{ transit_vxlan.tx_vxlan }}
+           - add vxlan vxlan{{ transit_vxlan.tx_vxlan }} bridge learning off
+           - add vxlan vxlan{{ transit_vxlan.tx_vxlan }} vxlan local-tunnelip {{ devices[inventory_hostname].loopback }}
+           - add vxlan vxlan{{ transit_vxlan.tx_vxlan }} bridge access {{ transit_vxlan.tx_vxlan }}
+           
+   - name: Add VNIs Configuration
+     nclu:
+       atomic: true
+       commands:
+           - add vxlan vni{{ item.vlan_id }} vxlan id {{ item.vlan_id }}
+           - add vxlan vni{{ item.vlan_id }} bridge access {{ item.vlan_id }}
+           - add vxlan vni{{ item.vlan_id }} vxlan local-tunnelip {{ devices[inventory_hostname].loopback }}
+           - add vxlan vni{{ item.vlan_id }} mtu 9000
+           - add vxlan vni{{ item.vlan_id }} stp bpduguard
+           - add vxlan vni{{ item.vlan_id }} stp portbpdufilter
+           - add vxlan vni{{ item.vlan_id }} bridge learning off
+           - add vxlan vni{{ item.vlan_id }} bridge arp-nd-suppress on
+           - add bridge bridge ports vni{{ item.vlan_id }}
+     with_items: "{{ vxlan.vni }}"
+

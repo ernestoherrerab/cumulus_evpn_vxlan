@@ -1,0 +1,52 @@
+---
+
+  - name: Configure the Leafs interfaces and Loopbacks
+    nclu:
+      atomic: true
+      template: |
+          {% if dev_type == "leaf" %}
+            {% for spine_if in devices[inventory_hostname].uplink_ports %}
+              add interface swp{{ spine_if }}
+              add interface swp{{ spine_if }} mtu 9216
+              add interface swp{{ spine_if }} alias to spine
+              add interface swp{{ spine_if }} ipv6 nd ra-interval 5
+              del interface swp{{ spine_if }} ipv6 nd suppress-ra
+            {% endfor %}
+
+          {% elif dev_type == "exit" %}
+            {% for internet_if in devices[inventory_hostname].internet_ports %}
+              add interface swp{{ internet_if.int_if }}
+              add interface swp{{ internet_if.int_if }} vrf {{ internet_if.int_vrf }}
+            {% endfor %}  
+            {% for spine_if in devices[inventory_hostname].uplink_ports %}
+              add interface swp{{ spine_if }}
+              add interface swp{{ spine_if }} mtu 9216
+              add interface swp{{ spine_if }} alias to spine
+              add interface swp{{ spine_if }} ipv6 nd ra-interval 5
+              del interface swp{{ spine_if }} ipv6 nd suppress-ra
+            {% endfor %}
+            {% for sub_if_edge in devices[inventory_hostname].edge_ports %}
+              add interface swp{{ sub_if_edge.sub_if }} ip address {{ sub_if_edge.sub_ip }}
+              add interface swp{{ sub_if_edge.sub_if }} {{ sub_if_edge.sub_vrf}}
+            {% endfor %}
+
+          {% elif dev_type == "spine" %}
+            {% for leaf_if in devices[inventory_hostname].leaf_ports %}
+              add interface swp{{ leaf_if }}
+              add interface swp{{ leaf_if }} mtu 9216
+              add interface swp{{ leaf_if }} alias to leaf
+              add interface swp{{ leaf_if }} ipv6 nd ra-interval 5
+              del interface swp{{ leaf_if }} ipv6 nd suppress-ra
+            {% endfor %} 
+          
+
+          {% elif dev_type == "internet" %}
+            {% for exit_if in devices[inventory_hostname].uplink_ports %}
+              add interface swp{{ exit_if }}
+              add interface swp{{ exit_if }} ipv6 nd ra-interval 5
+              del interface swp{{ exit_if }} ipv6 nd suppress-ra
+            {% endfor %}
+            add loopback lo ip address {{devices[inventory_hostname].sec_loopback}}/32
+          {% endif %}
+
+          add loopback lo ip address {{devices[inventory_hostname].loopback}}/32
