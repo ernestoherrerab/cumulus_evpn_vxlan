@@ -37,8 +37,8 @@ devices:
          - 49
          - 50
       access_ports: 
-         - {bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
-         - {bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
+         - { bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
+         - { bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
 
    leaf02:
       asn: 65012
@@ -53,8 +53,8 @@ devices:
          - 49
          - 50
       access_ports: 
-         - {bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
-         - {bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
+         - { bond_name: server1 , access_if: 1 , clag_id: 1 , vlan: 13 }
+         - { bond_name: server2 , access_if: 2 , clag_id: 2 , vlan: 24 }
 
    leaf03:
       asn: 65013
@@ -69,8 +69,8 @@ devices:
          - 49
          - 50
       access_ports: 
-         - {bond_name: server3 , access_if: 1 , clag_id: 3 , vlan: 13 }
-         - {bond_name: server4 , access_if: 2 , clag_id: 4 , vlan: 24 }
+         - { bond_name: server3 , access_if: 1 , clag_id: 3 , vlan: 13 }
+         - { bond_name: server4 , access_if: 2 , clag_id: 4 , vlan: 24 }
 
    leaf04:
       asn: 65014
