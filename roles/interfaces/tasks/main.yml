@@ -14,6 +14,10 @@
             {% endfor %}
 
           {% elif dev_type == "exit" %}
+            {% for bridge_if in devices[inventory_hostname].bridge_ports %}
+              add interface swp{{ bridge_if }}
+              add interface swp{{ bridge_if }} mtu 9216
+            {% endfor %} 
             {% for internet_if in devices[inventory_hostname].internet_ports %}
               add interface swp{{ internet_if.int_if }}
               add interface swp{{ internet_if.int_if }} vrf {{ internet_if.int_vrf }}
