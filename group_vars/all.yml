@@ -84,7 +84,9 @@ devices:
       peerlink_ports:
          - 49
          - 50
-      server_id: 2 
+      access_ports: 
+         - { bond_name: server3 , access_if: 1 , clag_id: 3 , vlan: 13 }
+         - { bond_name: server4 , access_if: 2 , clag_id: 4 , vlan: 24 }
 
    exit01:
       asn: 65041
