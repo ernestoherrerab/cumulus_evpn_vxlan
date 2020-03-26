@@ -30,7 +30,9 @@ server04
 [network:children]
 leaf
 spine
+exit
 internet_rtr
+
 
 [network:vars]
 ansible_user=cumulus

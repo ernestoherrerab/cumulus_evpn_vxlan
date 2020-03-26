@@ -39,7 +39,6 @@
               del interface swp{{ leaf_if }} ipv6 nd suppress-ra
             {% endfor %} 
           
-
           {% elif dev_type == "internet" %}
             {% for exit_if in devices[inventory_hostname].uplink_ports %}
               add interface swp{{ exit_if }}
