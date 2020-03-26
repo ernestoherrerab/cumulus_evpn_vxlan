@@ -5,7 +5,7 @@ devices:
    spine01:
       loopback: 10.0.0.21
       asn: 65020
-      leaf_links:
+      leaf_ports:
          - 1
          - 2
          - 3
@@ -16,7 +16,7 @@ devices:
    spine02:
       loopback: 10.0.0.22
       asn: 65020
-      leaf_links:
+      leaf_ports:
          - 1
          - 2
          - 3
